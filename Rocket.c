@@ -383,18 +383,6 @@ void testMain(void){
 	}
 }
 
-void requirementMainchuteMain(void){
-	struct DataStruct data;
-	rocketInit(&data);
-	do {
-		collectData(&data);
-	} while (data.altitude > 914.4);
-	fireMain2();
-	while (1)
-	{
-	}
-}
-
 void testAngleMain(void){
 	struct DataStruct data;
 	float volatile degrees;
