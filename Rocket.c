@@ -383,20 +383,6 @@ void testMain(void){
 	}
 }
 
-void testAngleMain(void){
-	struct DataStruct data;
-	float volatile degrees;
-	rocketInit(&data);
-	FIREENABLE();
-	while(1){
-		collectData(&data);
-		degrees = angleFromVertical(&data);
-		if (degrees >= 70){
-			fire2();
-		}
-	}
-}
-
 void rocketMain(struct DataStruct* data){
 	uint8_t payload[PAYLOAD2SIZE];
 	collectData(data);
