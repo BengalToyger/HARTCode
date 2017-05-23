@@ -236,39 +236,3 @@ float parseDegreesMinutes(char *s, int degLength) {
 	// Convert the minutes to decimal degrees
 	return degrees + (minutes / 60);
 }
-
-float getDegreesLong(char* longitude){
-	if(*longitude == '\0') {
-		return 0;
-	}
-	char degreesString[4];
-	char minutesString[9];
-	uint16_t volatile degrees;
-	float volatile minutes;
-	memcpy(degreesString,longitude,3);
-	degreesString[3] = '\0';
-	degrees = atoi(degreesString);
-	memcpy(minutesString,longitude+3,8);
-	minutesString[8] = '\0';
-	minutes = atof(minutesString);
-	minutes = minutes / 60;
-	return (float)degrees + minutes;
-}
-	
-float getDegreesLat(char* latitude){
-	if(*latitude == '\0') {
-		return 0;
-	}
-	char degreesString[3];
-	char minutesString[9];
-	uint16_t volatile degrees;
-	float volatile minutes;
-	memcpy(degreesString,latitude,2);
-	degreesString[2] = '\0';
-	degrees = atoi(degreesString);
-	memcpy(minutesString,latitude+2,8);
-	minutesString[8] = '\0';
-	minutes = atof(minutesString);
-	minutes = minutes / 60;
-	return (float)degrees + minutes;
-}
