@@ -53,7 +53,7 @@ float getDegreesLat(char* latitude);
 float getDegreesLong(char* longitude);
 
 /*Primary Functions*/
-uint16_t InitGPS(uint8_t* GPS, char* packet); //Returns value put in UBRR
+uint16_t InitGPS(void); //Returns value put in UBRR
 void GetLLA(struct GPSStruct* GPSdata, uint8_t en, char* packet);
 
 #endif

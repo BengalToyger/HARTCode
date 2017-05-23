@@ -1,40 +1,27 @@
 #include "PAM7Q.h"
 
 //Use RATE (PUBX,40)
-uint16_t InitGPS(uint8_t* GPS, char* packet){
+uint16_t InitGPS(void){
 	uint8_t volatile i;
 	uint16_t volatile SetUBRR; //Turns off all the messages we don't want
 	char CFGMSG[CFGMSGSIZE] = CFGMSGBASE;
 	SetUBRR = InitUSART(GPSBAUD, GPSPORT);
 	if (SetUBRR){
-		do {
-			PUBXCFGSetup(CFGMSG, "GGA");
-			SendGPS(CFGMSG, CFGMSGSIZE);
-			_delay_ms(5);
-			PUBXCFGSetup(CFGMSG, "GLL");
-			SendGPS(CFGMSG, CFGMSGSIZE);
-			_delay_ms(5);
-			PUBXCFGSetup(CFGMSG, "GSA");
-			SendGPS(CFGMSG, CFGMSGSIZE);
-			_delay_ms(5);
-			PUBXCFGSetup(CFGMSG, "GSV");
-			SendGPS(CFGMSG, CFGMSGSIZE);
-			_delay_ms(5);
-			PUBXCFGSetup(CFGMSG, "RMC");
-			SendGPS(CFGMSG, CFGMSGSIZE);
-			_delay_ms(5);
-			PUBXCFGSetup(CFGMSG, "VTG");
-			SendGPS(CFGMSG, CFGMSGSIZE);
-			_delay_ms(200);
-			i++;
-			//ADD TIMEOUT FOR IF NOT GPS
-		} while (!PollPUBX00(packet) && i <= 20);
-		initGPSTimer();
-		if (i > 20){
-			*GPS = 0;
-		} else {
-			*GPS = 1;
-		}
+		_delay_ms(5);
+		PUBXCFGSetup(CFGMSG, "GLL");
+		SendGPS(CFGMSG, CFGMSGSIZE);
+		_delay_ms(5);
+		PUBXCFGSetup(CFGMSG, "GSA");
+		SendGPS(CFGMSG, CFGMSGSIZE);
+		_delay_ms(5);
+		PUBXCFGSetup(CFGMSG, "GSV");
+		SendGPS(CFGMSG, CFGMSGSIZE);
+		_delay_ms(5);
+		PUBXCFGSetup(CFGMSG, "RMC");
+		SendGPS(CFGMSG, CFGMSGSIZE);
+		_delay_ms(5);
+		PUBXCFGSetup(CFGMSG, "VTG");
+		SendGPS(CFGMSG, CFGMSGSIZE);
 		return SetUBRR;
 	} else {
 		return 0;
