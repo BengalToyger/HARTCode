@@ -1,9 +1,37 @@
 #include "PAM7Q.h"
 
+
+char gpsBuffer[256];
+uint8_t msgIndex;
+uint8_t msgBeginFlag;
+uint8_t msgEndFlag;
+
+ISR(USART0_RX_vect){
+	uint8_t rcvb;
+	rcvb = UDR0;
+	if (rcvb == '$' && !msgEndFlag){
+		msgBeginFlag = 1;
+		msgIndex = 0;
+		gpsBuffer[msgIndex] = rcvb;
+		msgIndex++;
+	} else if (msgBeginFlag && rcvb != '*' && !msgEndFlag){
+		gpsBuffer[msgIndex] = rcvb;
+		msgIndex++;
+	} else if (msgBeginFlag && rcvb == '*' && !msgEndFlag){
+		gpsBuffer[msgIndex] = rcvb;
+		msgIndex = 0;
+		msgEndFlag = 1;
+		msgBeginFlag = 0;
+		cli();
+		return;
+	}
+}
+
+
 //Use RATE (PUBX,40)
 uint16_t InitGPS(void){
 	uint16_t volatile SetUBRR; //Turns off all the messages we don't want
-	char CFGMSG[CFGMSGSIZE] = CFGMSGBASE;
+	char CFGMSG[CFGMSGSIZE] = PUBXNOCOMMCFGMSGBASE;
 	SetUBRR = InitUSART(GPSBAUD, GPSPORT);
 	if (SetUBRR){
 		_delay_ms(2000);
@@ -131,7 +159,7 @@ void parseGGA(char *packet, struct GPSStruct *GPSdata) {
 	GPSdata->longitude = parseDegreesMinutes(msgPart, 3);
 	// get the E/W component of the longitude. If it's 'W', then make the longitude negative
 	msgPart = strsep(&packetCopy, ",");
-	if(*msgPart == 'S') {
+	if(*msgPart == 'W') {
 		GPSdata->longitude = -GPSdata->longitude;
 	}
 	
@@ -143,28 +171,13 @@ void parseGGA(char *packet, struct GPSStruct *GPSdata) {
 	// Get the altitude. If there is no altitude, then set it to zero.
 	msgPart = strsep(&packetCopy, ",");
 	if(*msgPart != '\0') {
-		GPSdata->GPSaltitude = atof(msgPart);
+		GPSdata->GPSAltitude = atof(msgPart);
 	} else {
-		GPSdata->GPSaltitude = 0;
+		GPSdata->GPSAltitude = 0;
 	}
 	
 	free(originalPacketCopy);
 		
-}
-
-void GetLLA(struct GPSStruct* GPSdata, uint8_t en, char* packet){
-	if (checkGPSTimer() && en){
-		if (PollPUBX00(packet)){
-			ParsePUBX(packet, GPSdata);
-			return;
-		} else {
-			GPSdata->GPSAltitude = 0;
-			GPSdata->latitude = 0;
-			GPSdata->longitude = 0;
-			return;
-		}
-	}
-	return;
 }
 
 void resetParsedata(char* parsedata){

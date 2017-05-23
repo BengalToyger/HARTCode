@@ -8,6 +8,7 @@
 #include "USARTComm.h"
 #include <util/delay.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <avr/interrupt.h>
 #include <string.h>
 
@@ -19,7 +20,7 @@
 #define PUBX00SIZE 10
 #define RSIZE 49
 #define GPSBAUD 9600
-#define CFGMSGBASE "PUBX,40,___,0,0,0,0,0,0*__"
+#define PUBXNOCOMMCFGMSGBASE "PUBX,40,___,0,0,0,0,0,0*__"
 #define CFGMSGSIZE 26
 #define MSGSTT 8
 #define MSGEND 11
@@ -46,11 +47,10 @@ uint8_t PollPUBX00(char* packet);
 void CheckSum(char* packet);
 void PUBXCFGSetup(char* packet, char* msg);
 void BintoHexChar(uint8_t bin, char* hexchar);
-void ParsePUBX(char* packet, struct GPSStruct* GPSdata);
+void ParseGGA(char* packet, struct GPSStruct* GPSdata);
 void resetParsedata(char* parsedata);
 uint8_t checkPUBX(char* gpsPacket);
-float getDegreesLat(char* latitude);
-float getDegreesLong(char* longitude);
+float parseDegreesMinutes(char *s, int degLength);
 
 /*Primary Functions*/
 uint16_t InitGPS(void); //Returns value put in UBRR
