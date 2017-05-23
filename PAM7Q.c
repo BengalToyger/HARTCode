@@ -94,64 +94,22 @@ uint8_t PollPUBX00(char* packet){
 	}
 }
 
+// Calculates and writes the checksum for an outgoing packet
 void CheckSum(char* packet){
 	uint8_t volatile i = 0;
 	uint8_t volatile checksum;
-	char hexchar[2];
+	char hexchar[3];
 	while(!(packet[i] == '*')){
 		checksum ^= packet[i]; //XORs all the packet bytes together to get the checksum
 		i++;
 	}
-	BintoHexChar(checksum, hexchar);
+	sprintf(hexchar, "%02X", checksum);
 	i++;
 	packet[i] = hexchar[0];
 	i++;
 	packet[i] = hexchar[1];
 	return;
 }
-
-void BintoHexChar(uint8_t bin, char* hexchar){
-	uint8_t volatile i; //Converts a binary number into two character hexadecimal
-	uint8_t volatile conv;
-	for (i = 0; i < 2; i++){
-		conv = (bin >> (1-i)*4);
-		conv &= 0x0F;
-		if (conv == 0){
-			hexchar[i] = '0';
-		} else if (conv == 1){
-			hexchar[i] = '1';
-		} else if (conv == 2){
-			hexchar[i] = '2';
-		} else if (conv == 3){
-			hexchar[i] = '3';
-		} else if (conv == 4){
-			hexchar[i] = '4';
-		} else if (conv == 5){
-			hexchar[i] = '5';
-		} else if (conv == 6){
-			hexchar[i] = '6';
-		} else if (conv == 7){
-			hexchar[i] = '7';
-		} else if (conv == 8){
-			hexchar[i] = '8';
-		} else if (conv == 9){
-			hexchar[i] = '9';
-		} else if (conv == 10){
-			hexchar[i] = 'A';
-		} else if (conv == 11){
-			hexchar[i] = 'B';
-		} else if (conv == 12){
-			hexchar[i] = 'C';
-		} else if (conv == 13){
-			hexchar[i] = 'D';
-		} else if (conv == 14){
-			hexchar[i] = 'E';
-		} else if (conv == 15){
-			hexchar[i] = 'F';
-		}
-	}
-	return;
-} 
 
 // Parses the latitude, longitude, and altitude out of a GGA (interrupt) message
 // Parameters:
