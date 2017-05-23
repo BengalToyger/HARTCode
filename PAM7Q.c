@@ -2,24 +2,23 @@
 
 //Use RATE (PUBX,40)
 uint16_t InitGPS(void){
-	uint8_t volatile i;
 	uint16_t volatile SetUBRR; //Turns off all the messages we don't want
 	char CFGMSG[CFGMSGSIZE] = CFGMSGBASE;
 	SetUBRR = InitUSART(GPSBAUD, GPSPORT);
 	if (SetUBRR){
-		_delay_ms(5);
+		_delay_ms(2000);
 		PUBXCFGSetup(CFGMSG, "GLL");
 		SendGPS(CFGMSG, CFGMSGSIZE);
-		_delay_ms(5);
+		_delay_ms(300);
 		PUBXCFGSetup(CFGMSG, "GSA");
 		SendGPS(CFGMSG, CFGMSGSIZE);
-		_delay_ms(5);
+		_delay_ms(300);
 		PUBXCFGSetup(CFGMSG, "GSV");
 		SendGPS(CFGMSG, CFGMSGSIZE);
-		_delay_ms(5);
+		_delay_ms(300);
 		PUBXCFGSetup(CFGMSG, "RMC");
 		SendGPS(CFGMSG, CFGMSGSIZE);
-		_delay_ms(5);
+		_delay_ms(300);
 		PUBXCFGSetup(CFGMSG, "VTG");
 		SendGPS(CFGMSG, CFGMSGSIZE);
 		return SetUBRR;

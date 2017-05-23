@@ -11,6 +11,7 @@
 
 int main(void)
 {
-	sustainerMain();
+	InitGPS();
+	while(1){};
 }
 

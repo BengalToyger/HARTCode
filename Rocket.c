@@ -105,7 +105,7 @@ void rocketInit(struct DataStruct* data){
 	uint8_t volatile i;
 	_delay_ms(100);
 	InitUSART(RADIOBAUD, RADIOPORT);
-	InitGPS(&(data->GPS), data->packet);
+	InitGPS();
 	InitAccel();
 	InitAltimeter(data->CC);
 	data->ematch = readEmatch();
