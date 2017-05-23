@@ -31,13 +31,13 @@
 #define ARMED 2
 #define LOWPOWER 4
 
-#define BOOSTTRIGGER 15
-#define STAGINGTRIGGER 0
+#define BOOSTTRIGGER 40
+#define STAGINGTRIGGER -15
 
 #define DROGUETIMESECSUSTAINER 11
 #define DROGUETIMESECBOOSTER 21
 
-#define MAINALTITUDEAGL -100
+#define MAINALTITUDEAGL 300
 
 #define SUSTAINERMAC 1
 #define RDFMAC 2
@@ -55,18 +55,19 @@
 
 /* Events */
 
-#define SEP1S 0
-#define SEP1R 1
-#define SEP2S 2
-#define SEP2R 3
-#define D1S 4
-#define D1R 5
-#define D2S 6
-#define D2R 7
-#define M1S 8
-#define M1R 9
-#define M2S 10
-#define M2R 11
+#define NONE 0
+#define SEP1S 1
+#define SEP1R 2
+#define SEP2S 3
+#define SEP2R 4
+#define D1S 5
+#define D1R 6
+#define D2S 7
+#define D2R 8
+#define M1S 9
+#define M1R 10
+#define M2S 11
+#define M2R 12
 
 
 /* USES TIMER/COUNTER 4*/

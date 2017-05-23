@@ -250,12 +250,8 @@ void GetLLA(struct GPSStruct* GPSdata, uint8_t en, char* packet){
 			GPSdata->longitude = 0;
 			return;
 		}
-	} else {
-		GPSdata->GPSAltitude = 0;
-		GPSdata->latitude = 0;
-		GPSdata->longitude = 0;
-		return;
 	}
+	return;
 }
 
 void resetParsedata(char* parsedata){
@@ -306,12 +302,12 @@ float getDegreesLong(char* longitude){
 	degreesString[3] = '\0';
 	degrees = atoi(degreesString);
 	memcpy(minutesString,longitude+3,8);
-	degreesString[8] = '\0';
-	minutes = atof(degreesString);
+	minutesString[8] = '\0';
+	minutes = atof(minutesString);
 	minutes = minutes / 60;
 	return (float)degrees + minutes;
 }
-
+	
 float getDegreesLat(char* longitude){
 	char degreesString[3];
 	char minutesString[9];
@@ -321,8 +317,8 @@ float getDegreesLat(char* longitude){
 	degreesString[2] = '\0';
 	degrees = atoi(degreesString);
 	memcpy(minutesString,longitude+2,8);
-	degreesString[8] = '\0';
-	minutes = atof(degreesString);
+	minutesString[8] = '\0';
+	minutes = atof(minutesString);
 	minutes = minutes / 60;
 	return (float)degrees + minutes;
 }

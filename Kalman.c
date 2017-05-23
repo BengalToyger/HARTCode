@@ -12,7 +12,7 @@ void Resetdt(void){
 }
 
 float Readdt(void){
-	uint16_t cnt;
+	float cnt;
 	cnt = TCNT1;
 	Resetdt();
 	return cnt/(F_CPU*KALMANPRSCL);

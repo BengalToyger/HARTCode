@@ -8,14 +8,13 @@ ISR(USART1_RX_vect){
 	uint16_t volatile i;
 	cli();
 	rxn = 0;
-	for (i = 0; i < 200; i++){
+	for (i = 0; i < 500; i++){
 		if (UCSR1A & (1<< RXC1)){
 			rx[rxn++] = UDR1;
 			i = 0;
 		}
 	} 
 	rxFlag=1; // notify main of receipt of data.
-	sei();
 }
 
 void collectData(struct DataStruct* data){
@@ -37,7 +36,7 @@ void formPayloadMode1(struct DataStruct* data, uint8_t* payload){
 	uint8_t volatile n = 0;
 	payload[n] = 1;
 	n++;
-	payload[n] = data->ematch;
+	payload[n] = data->matchSetReset;
 	n++;
 	payload[n] = data->degreesC;
 	return;
@@ -116,7 +115,7 @@ void rocketInit(struct DataStruct* data){
 	data->GPSData.latitude = 0;
 	data->GPSData.longitude = 0;
 	data->EstData.kVelocity = 0;
-	data->matchSetReset = 0;
+	data->matchSetReset = NONE;
 	collectData(data);
 	for (i = 0; i < 6; i++){
 		collectData(data);
@@ -133,11 +132,12 @@ void rocketInit(struct DataStruct* data){
 
 void receiveArmed(struct DataStruct* data){
 	if (rxFlag){
-		if (rx[16] == 1 || rx[16] == 2){
-			data->mode = rx[16];
+		if (rx[rxn-2] == 1 || rx[rxn-2] == 2){
+			data->mode = rx[rxn-2];
 			rxFlag = 0;	
 		}
 	}
+	sei();
 	return;
 }
 
@@ -145,8 +145,9 @@ void launchPad(struct DataStruct* data){
 	uint8_t payload[PAYLOAD2SIZE];
 	initSendCnt();
 	sei();
+	data->mode = ARMED;
 	do {
-		receiveArmed(data);
+		//receiveArmed(data);
 		collectData(data);
 		Estimate(&(data->EstData),&(data->AccelData),data->altitude);
 		if (data->mode == TESTING && sendCnt()){
@@ -392,6 +393,14 @@ void rocketMain(struct DataStruct* data){
 		send(payload, PAYLOAD2SIZE, GNDMAC);
 	}
 	return;
+}
+
+void dataOnlyMain(void){
+	struct DataStruct data;
+	rocketInit(&data);
+	while (1){
+		rocketMain(&data);
+	}
 }
 
 void sustainerMain(void){
