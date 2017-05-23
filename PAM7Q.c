@@ -80,15 +80,16 @@ uint8_t PollPUBX00(char* packet){
 	}
 }
 
+// Calculates and writes the checksum for an outgoing packet
 void CheckSum(char* packet){
 	uint8_t volatile i = 0;
 	uint8_t volatile checksum;
-	char hexchar[2];
+	char hexchar[3];
 	while(!(packet[i] == '*')){
 		checksum ^= packet[i]; //XORs all the packet bytes together to get the checksum
 		i++;
 	}
-	BintoHexChar(checksum, hexchar);
+	sprintf(hexchar, "%02X", checksum);
 	i++;
 	packet[i] = hexchar[0];
 	i++;
@@ -96,133 +97,59 @@ void CheckSum(char* packet){
 	return;
 }
 
-void BintoHexChar(uint8_t bin, char* hexchar){
-	uint8_t volatile i; //Converts a binary number into two character hexadecimal
-	uint8_t volatile conv;
-	for (i = 0; i < 2; i++){
-		conv = (bin >> (1-i)*4);
-		conv &= 0x0F;
-		if (conv == 0){
-			hexchar[i] = '0';
-		} else if (conv == 1){
-			hexchar[i] = '1';
-		} else if (conv == 2){
-			hexchar[i] = '2';
-		} else if (conv == 3){
-			hexchar[i] = '3';
-		} else if (conv == 4){
-			hexchar[i] = '4';
-		} else if (conv == 5){
-			hexchar[i] = '5';
-		} else if (conv == 6){
-			hexchar[i] = '6';
-		} else if (conv == 7){
-			hexchar[i] = '7';
-		} else if (conv == 8){
-			hexchar[i] = '8';
-		} else if (conv == 9){
-			hexchar[i] = '9';
-		} else if (conv == 10){
-			hexchar[i] = 'A';
-		} else if (conv == 11){
-			hexchar[i] = 'B';
-		} else if (conv == 12){
-			hexchar[i] = 'C';
-		} else if (conv == 13){
-			hexchar[i] = 'D';
-		} else if (conv == 14){
-			hexchar[i] = 'E';
-		} else if (conv == 15){
-			hexchar[i] = 'F';
-		}
-	}
-	return;
-} 
-
-void ParsePUBX(char* packet, struct GPSStruct* GPSdata){
-	char* parsedata = "0000000000000";
-	uint8_t volatile i = 8; //Starts at beginning of time field
-	uint8_t volatile dcnt = 0;
-	char volatile ns;
-	char volatile ew;
-	parsedata[12] = '\0';
-	while (packet[i] != ','){ //Skips through time field looking for next comma
-		i++;
-		if (i > 100){
-			break;
-		}
-	}
-	i++;
-	while (packet[i] != ','){
-		if (i > 100){
-			break;
-		}
-		parsedata[dcnt] = packet[i]; //Puts latitude into parse data string. Goes until next comma. If no latitude, should not enter as it sees a comma
-		i++;
-		dcnt++;
-	}
-	parsedata[dcnt] = '\0'; //Puts null char at end so can do atof. If field was empty parsedata is just a null char
-	if (dcnt){
-		GPSdata->latitude = getDegreesLat(parsedata);
-	} else {
-		GPSdata->latitude = 0; //Gives latitude a 0 if no data in field
-	}
-	i++;
-	if (packet[i] != ',' && packet[i] <= 100){ //Looks for North/South indicator. Defaults North.
-		ns = packet[i];
-		i += 2;
-	} else {
-		ns = 'N';
-		i++;
-	}
-	resetParsedata(parsedata);
-	dcnt = 0;
-	while (packet[i] != ','){ //Gets longitude data
-		if (i > 100){
-			break;
-		}
-		parsedata[dcnt] = packet[i];
-		i++;
-		dcnt++;
-	}
-	parsedata[dcnt] = '\0';
-	if (dcnt){
-		GPSdata->longitude = getDegreesLong(parsedata);
-	} else {
-		GPSdata->longitude = 0;
-	}
-	i++;
-	if (packet[i] != ',' && i <= 100){ //Gets East/West. Defaults West
-		ew = packet[i];
-		i += 2;
-	} else {
-		ew = 'W'; 
-		i++;
-	}
-	resetParsedata(parsedata);
-	dcnt = 0;
-	while (packet[i] != ','){ //Gets altitude data
-		if (i > 100){
-			break;
-		}
-		parsedata[dcnt] = packet[i];
-		i++;
-		dcnt++;
-	}
-	parsedata[dcnt] = '\0';
-	if (dcnt){
-		GPSdata->GPSAltitude = (float)atof(parsedata);	
-	} else {
-		GPSdata->GPSAltitude = 0;
+// Parses the latitude, longitude, and altitude out of a GGA (interrupt) message
+// Parameters:
+//		packet:		the GGA message string
+//		GPSdata:	the struct that accepts the final calculated data
+// Returns:
+//		Nothing
+void parseGGA(char *packet, struct GPSStruct *GPSdata) {
+	char *packetCopy = strdup(packet);
+	// We are going to alter the packetCopy pointer with strsep, so keep
+	// a copy of the original location so we can free() it later.
+	char *originalPacketCopy = packetCopy; 
+	// The string token that we are currently looking at
+	char *msgPart = packetCopy;
+	int i;
+	
+	// Skip the xxGGA and time fields
+	for(i = 0; i < 2; i++) {
+		strsep(&packetCopy, ",");
 	}
 	
-	if (ew == 'W'){ //Sets positive/negative based on E/W N/S
-		GPSdata->longitude = -1*GPSdata->longitude;
+	// get the latitude
+	msgPart = strsep(&packetCopy, ",");
+	GPSdata->latitude = parseDegreesMinutes(msgPart, 2);
+	// get the N/S component of the latitude. If it's 'S', then make the latitude negative
+	msgPart = strsep(&packetCopy, ",");
+	if(*msgPart == 'S') {
+		GPSdata->latitude = -GPSdata->latitude;
 	}
-	if (ns == 'S'){
-		GPSdata->latitude = -1*GPSdata->latitude;
+	
+	// get the longitude
+	msgPart = strsep(&packetCopy, ",");
+	GPSdata->longitude = parseDegreesMinutes(msgPart, 3);
+	// get the E/W component of the longitude. If it's 'W', then make the longitude negative
+	msgPart = strsep(&packetCopy, ",");
+	if(*msgPart == 'S') {
+		GPSdata->longitude = -GPSdata->longitude;
 	}
-	return;
+	
+	// Skip the quality, numSV, and HDOP fields
+	for(i = 0; i < 3; i++) {
+		strsep(&packetCopy, ",");
+	}
+	
+	// Get the altitude. If there is no altitude, then set it to zero.
+	msgPart = strsep(&packetCopy, ",");
+	if(*msgPart != '\0') {
+		GPSdata->GPSaltitude = atof(msgPart);
+	} else {
+		GPSdata->GPSaltitude = 0;
+	}
+	
+	free(originalPacketCopy);
+		
 }
 
 void GetLLA(struct GPSStruct* GPSdata, uint8_t en, char* packet){
@@ -279,32 +206,19 @@ uint8_t checkGPSTimer(void){
 	}
 }
 
-float getDegreesLong(char* longitude){
-	char degreesString[4];
-	char minutesString[9];
-	uint16_t volatile degrees;
+// Parses a string in the format: DDMM.MMMMMMM, where DD is degrees, and MM is minutes.
+// degLength is the length of the degrees part. For example, degLength of 3 means
+// the string will be DDDMM.MMMMMMM.
+float parseDegreesMinutes(char *s, int degLength) {
+	char degreesString[degLength + 1];
+	float volatile degrees;
 	float volatile minutes;
-	memcpy(degreesString,longitude,3);
-	degreesString[3] = '\0';
-	degrees = atoi(degreesString);
-	memcpy(minutesString,longitude+3,8);
-	minutesString[8] = '\0';
-	minutes = atof(minutesString);
-	minutes = minutes / 60;
-	return (float)degrees + minutes;
-}
-	
-float getDegreesLat(char* longitude){
-	char degreesString[3];
-	char minutesString[9];
-	uint16_t volatile degrees;
-	float volatile minutes;
-	memcpy(degreesString,longitude,2);
-	degreesString[2] = '\0';
-	degrees = atoi(degreesString);
-	memcpy(minutesString,longitude+2,8);
-	minutesString[8] = '\0';
-	minutes = atof(minutesString);
-	minutes = minutes / 60;
-	return (float)degrees + minutes;
+	// Copy the degrees part into degreesString and convert it to a float
+	strncpy(degreesString, s, degLength);
+	degreesString[degLength] = '\0';
+	degrees = atof(degreesString);
+	// Convert the minutes
+	minutes = atof(s + degLength);
+	// Convert the minutes to decimal degrees
+	return degrees + (minutes / 60);
 }
