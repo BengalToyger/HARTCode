@@ -16,8 +16,9 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
+#define PARSE_DEGREES_MINUTES_TOLERANCE 0.0001
 
-
+void beginUnitTest();
 
 
 
