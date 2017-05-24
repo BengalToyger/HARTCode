@@ -69,6 +69,7 @@
 #define M2S 11
 #define M2R 12
 
+#define UNITTEST
 
 /* USES TIMER/COUNTER 4*/
 
@@ -95,7 +96,7 @@ void formPayloadMode1(struct DataStruct* data, uint8_t* payload);
 void formPayloadMode2(struct DataStruct* data, uint8_t* payload);
 void formPayloadMode4(struct DataStruct* data, uint8_t* payload);
 
-void receiveArmed(struct DataStruct* data); 
+void receiveArmed(struct DataStruct* data);
 
 void rocketInit(struct DataStruct* data);
 
@@ -119,7 +120,7 @@ void testMain(void);
 
 void rocketMain(struct DataStruct* data);
 
-void sustainerMain(void); 
+void sustainerMain(void);
 void boosterMain(void);
 
 #endif
