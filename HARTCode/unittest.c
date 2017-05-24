@@ -20,18 +20,20 @@ void failUnitTest1(char *error) {
 
 void makeRandomDegreesMinutesCall(int maxDegrees, int length) {
 	char s[12];
-	int deg, min;
-	float result, minFraction, expected;
+	int deg, min, minFraction1, minFraction2;
+	float result,  expected;
 
 	deg = rand_r(&randContext) % maxDegrees;
 	min = rand_r(&randContext) % 60;
-	minFraction = (rand_r(&randContext) % 99999) / 10000.0;
-	expected = maxDegrees + (min + minFraction) / 60;
+	//minFraction = (rand_r(&randContext) % 99999) / 10000.0;
+	minFraction1 = rand_r(&randContext) % 100;
+	minFraction2 = rand_r(&randContext) % 1000;
+	expected = deg + (min + minFraction1 / 100.0 + minFraction2 / 100000.0) / 60.0;
 
 	if(length == 2) {
-		sprintf(s, "%02d%02d%.5f", deg, min, minFraction);
+		sprintf(s, "%02d%02d.%02d%03d", deg, min, minFraction1, minFraction2);
 	} else if (length == 3) {
-		sprintf(s, "%03d%02d%.5f", deg, min, minFraction);
+		sprintf(s, "%03d%02d.%02d%03d", deg, min, minFraction1, minFraction2);
 	}
 	result = parseDegreesMinutes(s, length);
 
