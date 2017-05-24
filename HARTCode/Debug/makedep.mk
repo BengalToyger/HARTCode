@@ -28,5 +28,7 @@ SPIComm.c
 
 TWIComm.c
 
+unittest.c
+
 USARTComm.c
 

@@ -36,10 +36,6 @@ struct GPSStruct {
 	float longitude;
 };
 
-void initGPSTimer(void);
-void resetGPSTimer(void);
-uint8_t checkGPSTimer(void);
-
 void SendGPS(char* poll, uint8_t size);
 void ReadGPS(char* packet, uint8_t size);
 void ResetGPS(void);
@@ -47,13 +43,12 @@ uint8_t PollPUBX00(char* packet);
 void CheckSum(char* packet);
 void PUBXCFGSetup(char* packet, char* msg);
 void BintoHexChar(uint8_t bin, char* hexchar);
-void ParseGGA(char* packet, struct GPSStruct* GPSdata);
-void resetParsedata(char* parsedata);
+void parseGGA(char* packet, struct GPSStruct* GPSdata);
 uint8_t checkPUBX(char* gpsPacket);
 float parseDegreesMinutes(char *s, int degLength);
 
 /*Primary Functions*/
 uint16_t InitGPS(void); //Returns value put in UBRR
-void GetLLA(struct GPSStruct* GPSdata, uint8_t en, char* packet);
+void getGPSData(struct GPSStruct *GPSdata);
 
 #endif

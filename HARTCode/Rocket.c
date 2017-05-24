@@ -26,9 +26,7 @@ void collectData(struct DataStruct* data){
 	data->ematch = readEmatch();
 	temp = CalcAltitudeConstTemp(PT);
 	data->altitude = temp;
-	if (data->state == LAUNCHPAD || data->state == PARACHUTE || data->mode == 4){
-		GetLLA(&(data->GPSData),data->GPS,data->packet);
-	}
+	getGPSData(&(data->GPSData));
 	return;
 }
 

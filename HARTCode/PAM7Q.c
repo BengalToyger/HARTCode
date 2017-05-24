@@ -9,15 +9,19 @@ uint8_t msgEndFlag;
 ISR(USART0_RX_vect){
 	uint8_t rcvb;
 	rcvb = UDR0;
+	//Checks to see receive byte is start of packet
 	if (rcvb == '$' && !msgEndFlag){
+		//If it is sets begin flag, puts in buffer
 		msgBeginFlag = 1;
 		msgIndex = 0;
 		gpsBuffer[msgIndex] = rcvb;
 		msgIndex++;
 	} else if (msgBeginFlag && rcvb != '*' && !msgEndFlag){
+		//If the message has started, put all received stuff in buffer
 		gpsBuffer[msgIndex] = rcvb;
 		msgIndex++;
 	} else if (msgBeginFlag && rcvb == '*' && !msgEndFlag){
+		//If end, stop receiving stuff and set end flag so that parsing can occur
 		gpsBuffer[msgIndex] = rcvb;
 		msgIndex = 0;
 		msgEndFlag = 1;
@@ -27,10 +31,12 @@ ISR(USART0_RX_vect){
 	}
 }
 
-
 //Use RATE (PUBX,40)
 uint16_t InitGPS(void){
 	uint16_t volatile SetUBRR; //Turns off all the messages we don't want
+	msgIndex = 0;
+	msgBeginFlag = 0;
+	msgEndFlag = 0;
 	char CFGMSG[CFGMSGSIZE] = PUBXNOCOMMCFGMSGBASE;
 	SetUBRR = InitUSART(GPSBAUD, GPSPORT);
 	if (SetUBRR){
@@ -125,6 +131,20 @@ void CheckSum(char* packet){
 	return;
 }
 
+// Once message end flag is set, puts data in the GPS struct and resets end flag
+// Parameters:
+//		GPSdata:	Struct that accepts data
+//	Returns:
+//		Nothing
+void getGPSData(struct GPSStruct *GPSdata){
+	if (msgEndFlag){
+		parseGGA(gpsBuffer, GPSdata);
+		msgEndFlag = 0;
+		sei();
+	}
+	return;
+}
+
 // Parses the latitude, longitude, and altitude out of a GGA (interrupt) message
 // Parameters:
 //		packet:		the GGA message string
@@ -178,45 +198,6 @@ void parseGGA(char *packet, struct GPSStruct *GPSdata) {
 	
 	free(originalPacketCopy);
 		
-}
-
-void resetParsedata(char* parsedata){
-	uint8_t volatile dcnt;
-	for (dcnt = 0; dcnt < 12; dcnt++){
-		parsedata[dcnt] = '0';
-	}
-	return;
-}
-
-uint8_t checkPUBX(char* gpsPacket){
-	if (gpsPacket[0] == 'P' && gpsPacket[1] == 'U' && gpsPacket[2] == 'B' && gpsPacket[3] == 'X'){
-		return 1;
-	}
-	else {
-		return 0;
-	}
-}
-
-void initGPSTimer(void){
-	TCCR3B = CSDIV256;
-	TCNT3 = 0;
-	return;
-}
-
-void resetGPSTimer(void){
-	TCNT3 = 0;
-	return;
-}
-
-uint8_t checkGPSTimer(void){
-	uint16_t volatile chk;
-	chk = TCNT3;
-	if (chk > ONEP2SECCLKDIV256){
-		resetGPSTimer();
-		return 1;
-	} else {
-		return 0;
-	}
 }
 
 // Parses a string in the format: DDMM.MMMMMMM, where DD is degrees, and MM is minutes.

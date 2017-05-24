@@ -96,6 +96,5 @@ void beginUnitTest() {
 
 int main(void)
 {
-	InitGPS();
 	while(1){};
 }
