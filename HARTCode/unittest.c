@@ -28,7 +28,11 @@ void makeRandomDegreesMinutesCall(int maxDegrees, int length) {
 	minFraction = (rand_r(&randContext) % 99999) / 10000.0;
 	expected = maxDegrees + (min + minFraction) / 60;
 
-	sprintf(s, "%0*d%02d%.5f", length, deg, min, minFraction);
+	if(length == 2) {
+		sprintf(s, "%02d%02d%.5f", deg, min, minFraction);
+	} else if (length == 3) {
+		sprintf(s, "%03d%02d%.5f", deg, min, minFraction);
+	}
 	result = parseDegreesMinutes(s, length);
 
 	if (abs(result - expected) > PARSE_DEGREES_MINUTES_TOLERANCE) {
