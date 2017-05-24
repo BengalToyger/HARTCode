@@ -50,6 +50,7 @@ C_SRCS +=  \
 ../RocketTiming.c \
 ../SPIComm.c \
 ../TWIComm.c \
+../unittest.c \
 ../USARTComm.c
 
 
@@ -73,6 +74,7 @@ Rocket.o \
 RocketTiming.o \
 SPIComm.o \
 TWIComm.o \
+unittest.o \
 USARTComm.o
 
 OBJS_AS_ARGS +=  \
@@ -89,6 +91,7 @@ Rocket.o \
 RocketTiming.o \
 SPIComm.o \
 TWIComm.o \
+unittest.o \
 USARTComm.o
 
 C_DEPS +=  \
@@ -105,6 +108,7 @@ Rocket.d \
 RocketTiming.d \
 SPIComm.d \
 TWIComm.d \
+unittest.d \
 USARTComm.d
 
 C_DEPS_AS_ARGS +=  \
@@ -121,6 +125,7 @@ Rocket.d \
 RocketTiming.d \
 SPIComm.d \
 TWIComm.d \
+unittest.d \
 USARTComm.d
 
 OUTPUT_FILE_PATH +=HARTCode.elf
@@ -137,6 +142,8 @@ LINKER_SCRIPT_DEP+=
 
 
 # AVR32/GNU C Compiler
+
+
 
 
 
