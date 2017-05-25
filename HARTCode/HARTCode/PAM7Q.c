@@ -1,10 +1,10 @@
 #include "PAM7Q.h"
 
 
-char gpsBuffer[256];
-uint8_t msgIndex;
-uint8_t msgBeginFlag;
-uint8_t msgEndFlag;
+char volatile gpsBuffer[256];
+uint8_t volatile msgIndex;
+uint8_t volatile msgBeginFlag;
+uint8_t volatile msgEndFlag;
 
 ISR(USART0_RX_vect){
 	uint8_t rcvb;

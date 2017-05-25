@@ -84,8 +84,29 @@ void testParseDegreesMinutes() {
 
 }
 
+// This function should test the GPS interrupt and parsing ability.
+// GPS packets should be sent from laptop over FTDI to the board
+// and an evident signal should be sent back if the test passed.
+void testGPSInterrupt(void){
+	struct GPSStruct gpsData;
+	gpsData.GPSAltitude = 0;
+	gpsData.latitude = 0;
+	gpsData.longitude = 0;
+	DDRB = 255;
+	PORTB = 255;
+	_delay_ms(500);
+	PORTB = 0;
+	InitGPS();
+	while ((abs(gpsData.latitude - parseDegreesMinutes("4717.11399", 2)) > PARSE_DEGREES_MINUTES_TOLERANCE) && (abs(gpsData.longitude - parseDegreesMinutes("00833.91590", 3)) > PARSE_DEGREES_MINUTES_TOLERANCE)){
+		getGPSData(&gpsData);
+	}
+	PORTB = 255;
+	while (1){};
+}
+
 void beginUnitTest() {
 	srand(time(NULL));
+	testGPSInterrupt();
 	testParseDegreesMinutes();
 }
 

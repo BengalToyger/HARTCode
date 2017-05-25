@@ -10,6 +10,8 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
+#define DOUNITTEST
+
 int main(void)
 {
 	#ifdef DOUNITTEST
