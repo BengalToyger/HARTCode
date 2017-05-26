@@ -1,10 +1,7 @@
 #ifndef PAM7Q
 #define PAM7Q
 
-#ifndef F_CPU
-#define F_CPU 16000000UL
-#endif
-
+#include "cpufreq.h"
 #include "USARTComm.h"
 #include <util/delay.h>
 #include <stdlib.h>

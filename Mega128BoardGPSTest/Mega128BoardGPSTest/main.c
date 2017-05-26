@@ -5,9 +5,11 @@
  * Author : Scott Merrill
  */
 
+#define F_CPU 16000000UL
 #include "unittest.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
+
 
 int main(void)
 {

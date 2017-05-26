@@ -7,6 +7,7 @@ uint8_t volatile msgBeginFlag = 0;
 uint8_t volatile msgEndFlag = 0;
 #ifdef UNITTEST
 uint8_t volatile commaCount = 0;
+uint8_t volatile interruptEchoIndex = 0;
 #endif
 
 ISR(USART0_RX_vect){
@@ -18,7 +19,7 @@ ISR(USART0_RX_vect){
 	//USARTTX(rcvb, GPSPORT);
 	#endif
 	//Resets if too high
-	if (msgIndex == 255){
+	if (msgIndex >= 254){
 		#ifdef DOUNITTEST
 		PORTB &= ~(1 << 2);
 		#endif
@@ -52,17 +53,23 @@ ISR(USART0_RX_vect){
 		msgIndex++;
 	} else if (msgBeginFlag && rcvb == '*' && !msgEndFlag){
 		//If end, stop receiving stuff and set end flag so that parsing can occur
-		#ifdef DOUNITTEST 
-		PORTB |= (1 << 3);
-		PORTB &= ~(1 << 1);
-		PORTB &= ~(1 << 2);
-		#endif
 		gpsBuffer[msgIndex] = rcvb;
 		msgIndex++;
 		gpsBuffer[msgIndex] = '\0';
 		msgIndex = 0;
 		msgEndFlag = 1;
 		msgBeginFlag = 0;
+		#ifdef DOUNITTEST
+		PORTB |= (1 << 3);
+		PORTB &= ~(1 << 1);
+		PORTB &= ~(1 << 2);
+		USARTTX('\n', GPSPORT);
+		for (interruptEchoIndex; interruptEchoIndex < 254; interruptEchoIndex++){
+			USARTTX(gpsBuffer[interruptEchoIndex], GPSPORT);
+		}
+		USARTTX('\n', GPSPORT);
+		interruptEchoIndex = 0;
+		#endif
 		cli();
 		return;
 	}
@@ -215,34 +222,69 @@ void getGPSData(struct GPSStruct *GPSdata){
 //		Nothing
 void parseGGA(char *packet, struct GPSStruct *GPSdata) {
 	char *packetCopy = strdup(packet);
+	uint8_t volatile i = 0;
 	// We are going to alter the packetCopy pointer with strsep, so keep
 	// a copy of the original location so we can free() it later.
 	char *originalPacketCopy = packetCopy; 
 	// The string token that we are currently looking at
 	char *msgPart = packetCopy;
-	int i;
+	#ifdef UNITTEST
+	while (packetCopy[i] != '\0'){
+		USARTTX(packetCopy[i], GPSPORT);
+		i++;	
+	}
+	USARTTX(packetCopy[i], GPSPORT);
+	USARTTX('\n', GPSPORT);
+	i = 0;
+	#endif
 	
 	// Skip the xxGGA and time fields
 	for(i = 0; i < 2; i++) {
 		strsep(&packetCopy, ",");
 	}
+	i = 0;
 	
 	// get the latitude
-	msgPart = strsep(&packetCopy, ",");
-	GPSdata->latitude = parseDegreesMinutes(msgPart, 2);
+	if (msgPart[i]){
+		msgPart = strsep(&packetCopy, ",");
+		GPSdata->latitude = parseDegreesMinutes(msgPart, 2);
+	} else {
+		GPSdata->latitude = 0;
+	}
+	
 	// get the N/S component of the latitude. If it's 'S', then make the latitude negative
-	msgPart = strsep(&packetCopy, ",");
-	if(*msgPart == 'S') {
-		GPSdata->latitude = -GPSdata->latitude;
+	if (msgPart[i]){
+		msgPart = strsep(&packetCopy, ",");
+		if(*msgPart == 'S') {
+			GPSdata->latitude = -GPSdata->latitude;
+		}
 	}
 	
 	// get the longitude
 	msgPart = strsep(&packetCopy, ",");
-	GPSdata->longitude = parseDegreesMinutes(msgPart, 3);
+	// Debug to see what it thinks the longitude is
+	#ifdef UNITTEST
+	i = 0;
+	while (msgPart[i] != '\0'){
+		USARTTX(packetCopy[i], GPSPORT);
+		i++;
+	}
+	USARTTX(msgPart[i], GPSPORT);
+	USARTTX('\n', GPSPORT);
+	i = 0;
+	#endif
+	
+	if (msgPart[i]){
+		GPSdata->longitude = parseDegreesMinutes(msgPart, 3);
+	} else {
+		GPSdata->longitude = 0;
+	}
 	// get the E/W component of the longitude. If it's 'W', then make the longitude negative
 	msgPart = strsep(&packetCopy, ",");
-	if(*msgPart == 'W') {
-		GPSdata->longitude = -GPSdata->longitude;
+	if (msgPart[i]){
+		if(*msgPart == 'W') {
+			GPSdata->longitude = -GPSdata->longitude;
+		}
 	}
 	
 	// Skip the quality, numSV, and HDOP fields

@@ -1,4 +1,5 @@
-PAM7Q.d PAM7Q.o: .././PAM7Q.c .././PAM7Q.h .././USARTComm.h \
+PAM7Q.d PAM7Q.o: .././PAM7Q.c .././PAM7Q.h .././cpufreq.h \
+ .././USARTComm.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\avr\io.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\avr\sfr_defs.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\inttypes.h \
@@ -22,6 +23,8 @@ PAM7Q.d PAM7Q.o: .././PAM7Q.c .././PAM7Q.h .././USARTComm.h \
  .././unittest.h
 
 .././PAM7Q.h:
+
+.././cpufreq.h:
 
 .././USARTComm.h:
 

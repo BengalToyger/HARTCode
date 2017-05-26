@@ -1,10 +1,7 @@
 #ifndef USARTCOMM
 #define USARTCOMM
 
-#ifndef F_CPU
-#define F_CPU 16000000UL
-#endif
-
+#include "cpufreq.h"
 #include <avr/io.h>
 
 uint16_t SetBR(uint32_t baud, uint8_t port);
