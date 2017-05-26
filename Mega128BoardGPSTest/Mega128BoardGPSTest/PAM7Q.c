@@ -1,32 +1,65 @@
 #include "PAM7Q.h"
-
+#include "unittest.h"
 
 char volatile gpsBuffer[256];
-uint8_t volatile msgIndex;
-uint8_t volatile msgBeginFlag;
-uint8_t volatile msgEndFlag;
+uint8_t volatile msgIndex = 0;
+uint8_t volatile msgBeginFlag = 0;
+uint8_t volatile msgEndFlag = 0;
+#ifdef UNITTEST
+uint8_t volatile commaCount = 0;
+#endif
 
 ISR(USART0_RX_vect){
 	uint8_t rcvb;
 	rcvb = UDR0;
+	#ifdef DOUNITTEST
+	PORTB &= ~(1 << 3);
 	PORTB ^= (1 << 0);
+	//USARTTX(rcvb, GPSPORT);
+	#endif
+	//Resets if too high
+	if (msgIndex == 255){
+		#ifdef DOUNITTEST
+		PORTB &= ~(1 << 2);
+		#endif
+		msgIndex = 0;
+		msgBeginFlag = 0;
+		msgEndFlag = 0;
+	}
 	//Checks to see receive byte is start of packet
 	if (rcvb == '$' && !msgEndFlag){
 		//If it is sets begin flag, puts in buffer
-		PORTB ^= (1 << 1);
+		#ifdef DOUNITTEST 
+		PORTB |= (1 << 1);
+		PORTB &= ~(1 << 3);
+		PORTB &= ~(1 << 2);
+		commaCount = 0;
+		#endif
 		msgBeginFlag = 1;
 		msgIndex = 0;
 		gpsBuffer[msgIndex] = rcvb;
 		msgIndex++;
-	} else if (msgBeginFlag && rcvb != '*' && !msgEndFlag){
+	} else if (msgBeginFlag && rcvb != '*' && !msgEndFlag && rcvb != '$'){
 		//If the message has started, put all received stuff in buffer
-		PORTB ^= (1 << 2);
+		#ifdef DOUNITTEST 
+		PORTB |= (1 << 2);
+		PORTB &= ~(1 << 1);
+		if (rcvb == ','){
+			commaCount++;
+		}
+		#endif
 		gpsBuffer[msgIndex] = rcvb;
 		msgIndex++;
 	} else if (msgBeginFlag && rcvb == '*' && !msgEndFlag){
 		//If end, stop receiving stuff and set end flag so that parsing can occur
-		PORTB ^= (1 << 3);
+		#ifdef DOUNITTEST 
+		PORTB |= (1 << 3);
+		PORTB &= ~(1 << 1);
+		PORTB &= ~(1 << 2);
+		#endif
 		gpsBuffer[msgIndex] = rcvb;
+		msgIndex++;
+		gpsBuffer[msgIndex] = '\0';
 		msgIndex = 0;
 		msgEndFlag = 1;
 		msgBeginFlag = 0;
@@ -149,9 +182,26 @@ void CheckSum(char* packet){
 //	Returns:
 //		Nothing
 void getGPSData(struct GPSStruct *GPSdata){
+	#ifdef DOUNITTEST
+	uint8_t volatile echoLength = 0;
+	uint8_t volatile echoIndex = 0;
+	int32_t volatile latConvert = 0; 
+	int32_t volatile longConvert = 0;
+	char echoLatLongAlt[256];
+	#endif
 	if (msgEndFlag){
 		parseGGA(gpsBuffer, GPSdata);
 		msgEndFlag = 0;
+		#ifdef DOUNITTEST
+		PORTB &= ~(1 << 3);
+		latConvert = (int32_t)GPSdata->latitude;
+		longConvert = (int32_t)GPSdata->longitude;
+		echoLength = sprintf(echoLatLongAlt, " %ld.%ld %ld.%ld %u %u", latConvert, labs((int32_t)((GPSdata->latitude - latConvert)*100000)), longConvert, labs((int32_t)((GPSdata->longitude - longConvert)*100000)), GPSdata->GPSAltitude, commaCount);
+		for (echoIndex; echoIndex < echoLength; echoIndex++){
+			USARTTX(echoLatLongAlt[echoIndex], GPSPORT);
+		}
+		USARTTX('\n', GPSPORT);
+		#endif
 		sei();
 	}
 	return;
