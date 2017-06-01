@@ -97,11 +97,9 @@ void testGPSInterrupt(void){
 	_delay_ms(500);
 	PORTB = 0;
 	InitGPS();
-	while ((gpsData.latitude - parseDegreesMinutes("4717.11399", 2) > PARSE_DEGREES_MINUTES_TOLERANCE) && (gpsData.longitude - parseDegreesMinutes("00833.91590", 3) > PARSE_DEGREES_MINUTES_TOLERANCE)){
+	while (1){
 		getGPSData(&gpsData);
 	}
-	PORTB = 255;
-	while (1){};
 }
 
 void beginUnitTest() {

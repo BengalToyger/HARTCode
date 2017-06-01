@@ -2,6 +2,7 @@
 #define AT24CMO2
 
 #include "TWIComm.h"
+#include "cpufreq.h"
 #include "USARTComm.h"
 #include <string.h>
 

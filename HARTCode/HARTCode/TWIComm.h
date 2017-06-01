@@ -1,5 +1,5 @@
-#ifndef TWICOMM
-#define TWICOMM
+#ifndef TWICOMM_H
+#define TWICOMM_H
 
 #include <avr/io.h>
 #include <util/delay.h>

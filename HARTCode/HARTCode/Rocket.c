@@ -128,6 +128,25 @@ void rocketInit(struct DataStruct* data){
 	return;
 }
 
+void rocketMain(struct DataStruct* data){
+	uint8_t payload[PAYLOAD2SIZE];
+	collectData(data);
+	Estimate(&(data->EstData),&(data->AccelData),data->altitude);
+	if (sendCnt()){
+		formPayloadMode2(data, payload);
+		send(payload, PAYLOAD2SIZE, GNDMAC);
+	}
+	return;
+}
+
+void dataOnlyMain(void){
+	struct DataStruct data;
+	rocketInit(&data);
+	while (1){
+		rocketMain(&data);
+	}
+}
+
 void receiveArmed(struct DataStruct* data){
 	if (rxFlag){
 		if (rx[rxn-2] == 1 || rx[rxn-2] == 2){
@@ -379,25 +398,6 @@ void testMain(void){
 	rocketInit(&data);
 	while (1){
 		launchPad(&data);
-	}
-}
-
-void rocketMain(struct DataStruct* data){
-	uint8_t payload[PAYLOAD2SIZE];
-	collectData(data);
-	Estimate(&(data->EstData),&(data->AccelData),data->altitude);
-	if (sendCnt()){
-		formPayloadMode2(data, payload);
-		send(payload, PAYLOAD2SIZE, GNDMAC);
-	}
-	return;
-}
-
-void dataOnlyMain(void){
-	struct DataStruct data;
-	rocketInit(&data);
-	while (1){
-		rocketMain(&data);
 	}
 }
 

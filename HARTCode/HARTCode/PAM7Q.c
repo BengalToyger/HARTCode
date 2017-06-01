@@ -1,31 +1,70 @@
 #include "PAM7Q.h"
-
+#include "unittest.h"
 
 char volatile gpsBuffer[256];
-uint8_t volatile msgIndex;
-uint8_t volatile msgBeginFlag;
-uint8_t volatile msgEndFlag;
+uint8_t volatile msgIndex = 0;
+uint8_t volatile msgBeginFlag = 0;
+uint8_t volatile msgEndFlag = 0;
+#ifdef UNITTEST
+uint8_t volatile commaCount = 0;
+uint8_t volatile interruptEchoIndex = 0;
+#endif
 
 ISR(USART0_RX_vect){
 	uint8_t rcvb;
 	rcvb = UDR0;
+	#ifdef DOUNITTEST
+	PORTB &= ~(1 << 3);
+	PORTB ^= (1 << 0);
+	//USARTTX(rcvb, GPSPORT);
+	#endif
+	//Resets if too high
+	if (msgIndex >= 254){
+		#ifdef DOUNITTEST
+		PORTB &= ~(1 << 2);
+		#endif
+		msgIndex = 0;
+		msgBeginFlag = 0;
+		msgEndFlag = 0;
+	}
 	//Checks to see receive byte is start of packet
 	if (rcvb == '$' && !msgEndFlag){
 		//If it is sets begin flag, puts in buffer
+		#ifdef DOUNITTEST 
+		PORTB |= (1 << 1);
+		PORTB &= ~(1 << 3);
+		PORTB &= ~(1 << 2);
+		commaCount = 0;
+		#endif
 		msgBeginFlag = 1;
 		msgIndex = 0;
 		gpsBuffer[msgIndex] = rcvb;
 		msgIndex++;
-	} else if (msgBeginFlag && rcvb != '*' && !msgEndFlag){
+	} else if (msgBeginFlag && rcvb != '*' && !msgEndFlag && rcvb != '$'){
 		//If the message has started, put all received stuff in buffer
+		#ifdef DOUNITTEST 
+		PORTB |= (1 << 2);
+		PORTB &= ~(1 << 1);
+		if (rcvb == ','){
+			commaCount++;
+		}
+		#endif
 		gpsBuffer[msgIndex] = rcvb;
 		msgIndex++;
 	} else if (msgBeginFlag && rcvb == '*' && !msgEndFlag){
 		//If end, stop receiving stuff and set end flag so that parsing can occur
 		gpsBuffer[msgIndex] = rcvb;
+		msgIndex++;
+		gpsBuffer[msgIndex] = '\0';
 		msgIndex = 0;
 		msgEndFlag = 1;
 		msgBeginFlag = 0;
+		#ifdef DOUNITTEST
+		PORTB |= (1 << 3);
+		PORTB &= ~(1 << 1);
+		PORTB &= ~(1 << 2);
+		USARTTX('\n', GPSPORT);
+		#endif
 		cli();
 		return;
 	}
@@ -55,11 +94,19 @@ uint16_t InitGPS(void){
 		_delay_ms(300);
 		PUBXCFGSetup(CFGMSG, "VTG");
 		SendGPS(CFGMSG, CFGMSGSIZE);
+		sei();
 		return SetUBRR;
 	} else {
 		return 0;
 	}
 }
+
+// Sets up the messages that disable various NMEA messages
+// Parameters: 
+//	packet: The packet to be sent, consisting of the config message base. The message name gets modified.
+//	msg: The particular identifier of the message to be turned off
+// Returns:
+//	Nothing
 
 void PUBXCFGSetup(char* packet, char* msg){
 	uint8_t volatile i = MSGSTT; //Sets up the configure message to turn off all the messages we don't want.
@@ -137,9 +184,26 @@ void CheckSum(char* packet){
 //	Returns:
 //		Nothing
 void getGPSData(struct GPSStruct *GPSdata){
+	#ifdef DOUNITTEST
+	uint8_t volatile echoLength = 0;
+	uint8_t volatile echoIndex = 0;
+	int32_t volatile latConvert = 0; 
+	int32_t volatile longConvert = 0;
+	char echoLatLongAlt[256];
+	#endif
 	if (msgEndFlag){
 		parseGGA(gpsBuffer, GPSdata);
 		msgEndFlag = 0;
+		#ifdef DOUNITTEST
+		PORTB &= ~(1 << 3);
+		latConvert = (int32_t)GPSdata->latitude;
+		longConvert = (int32_t)GPSdata->longitude;
+		echoLength = sprintf(echoLatLongAlt, " %ld.%ld %ld.%ld %u %u", latConvert, labs((int32_t)((GPSdata->latitude - latConvert)*100000)), longConvert, labs((int32_t)((GPSdata->longitude - longConvert)*100000)), GPSdata->GPSAltitude, commaCount);
+		for (echoIndex; echoIndex < echoLength; echoIndex++){
+			USARTTX(echoLatLongAlt[echoIndex], GPSPORT);
+		}
+		USARTTX('\n', GPSPORT);
+		#endif
 		sei();
 	}
 	return;
@@ -153,34 +217,50 @@ void getGPSData(struct GPSStruct *GPSdata){
 //		Nothing
 void parseGGA(char *packet, struct GPSStruct *GPSdata) {
 	char *packetCopy = strdup(packet);
+	uint8_t volatile i = 0;
 	// We are going to alter the packetCopy pointer with strsep, so keep
 	// a copy of the original location so we can free() it later.
 	char *originalPacketCopy = packetCopy; 
 	// The string token that we are currently looking at
 	char *msgPart = packetCopy;
-	int i;
 	
 	// Skip the xxGGA and time fields
 	for(i = 0; i < 2; i++) {
 		strsep(&packetCopy, ",");
 	}
+	i = 0;
 	
 	// get the latitude
-	msgPart = strsep(&packetCopy, ",");
-	GPSdata->latitude = parseDegreesMinutes(msgPart, 2);
+	if (msgPart[i]){
+		msgPart = strsep(&packetCopy, ",");
+		GPSdata->latitude = parseDegreesMinutes(msgPart, 2);
+	} else {
+		GPSdata->latitude = 0;
+	}
+	
 	// get the N/S component of the latitude. If it's 'S', then make the latitude negative
-	msgPart = strsep(&packetCopy, ",");
-	if(*msgPart == 'S') {
-		GPSdata->latitude = -GPSdata->latitude;
+	if (msgPart[i]){
+		msgPart = strsep(&packetCopy, ",");
+		if(*msgPart == 'S') {
+			GPSdata->latitude = -GPSdata->latitude;
+		}
 	}
 	
 	// get the longitude
 	msgPart = strsep(&packetCopy, ",");
-	GPSdata->longitude = parseDegreesMinutes(msgPart, 3);
+	// Debug to see what it thinks the longitude is
+	
+	if (msgPart[i]){
+		GPSdata->longitude = parseDegreesMinutes(msgPart, 3);
+	} else {
+		GPSdata->longitude = 0;
+	}
 	// get the E/W component of the longitude. If it's 'W', then make the longitude negative
 	msgPart = strsep(&packetCopy, ",");
-	if(*msgPart == 'W') {
-		GPSdata->longitude = -GPSdata->longitude;
+	if (msgPart[i]){
+		if(*msgPart == 'W') {
+			GPSdata->longitude = -GPSdata->longitude;
+		}
 	}
 	
 	// Skip the quality, numSV, and HDOP fields

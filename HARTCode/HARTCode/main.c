@@ -5,12 +5,11 @@
  * Author : Scott Merrill
  */
 
-#include "Rocket.h"
+#define F_CPU 16000000UL
 #include "unittest.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
-#define DOUNITTEST
 
 int main(void)
 {

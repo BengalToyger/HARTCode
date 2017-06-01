@@ -1,12 +1,9 @@
-#ifndef TIMING
-#define TIMING
+#ifndef TIMING_H
+#define TIMING_H
 
 #include "Rocket.h"
 #include "Firing.h"
-
-#ifndef F_CPU
-#define F_CPU 8000000
-#endif
+#include "cpufreq.h"
 
 #define CSDIV64 (0 << CS12)|(1 << CS11)|(1 << CS10) //.524 sec to rollover
 #define CSDIV256 1 << CS12 //2.097 sec to rollover

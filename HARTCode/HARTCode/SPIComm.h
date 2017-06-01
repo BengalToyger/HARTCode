@@ -1,8 +1,9 @@
 /* SPIComm has functions for using SPI easily */
 
-#ifndef SPICOMM
-#define SPICOMM
+#ifndef SPICOMM_H
+#define SPICOMM_H
 
+#include "cpufreq.h"
 #include <avr/io.h>
 
 #define MOSI PB2

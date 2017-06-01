@@ -1,8 +1,9 @@
 /* MPU6000.h is the header file for the accelerometer */
 
-#ifndef MPU6000
-#define MPU6000
+#ifndef MPU6000_H
+#define MPU6000_H
  
+#include "cpufreq.h"
 #include "ChipSelect.h"
 #include <avr/io.h>
 #include <util/delay.h>

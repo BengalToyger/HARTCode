@@ -1,10 +1,7 @@
-#ifndef ROCKET
-#define ROCKET
+#ifndef ROCKET_H
+#define ROCKET_H
 
-#ifndef F_CPU
-#define F_CPU 8000000UL
-#endif
-
+#include "cpufreq.h"
 #include "RocketTiming.h"
 #include "MPU6000.h"
 #include "AT24CMO2.h"

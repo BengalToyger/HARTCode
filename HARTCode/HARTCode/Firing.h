@@ -1,6 +1,7 @@
 #ifndef FIRING
 #define FIRING
 
+#include "cpufreq.h"
 #include <avr/io.h>
 #include "USARTComm.h"
 

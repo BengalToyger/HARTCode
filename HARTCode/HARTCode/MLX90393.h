@@ -1,8 +1,9 @@
 /* MLX9039.h is the include file for the MLX9039.h magnetometer */
 
-#ifndef MLX90393
-#define MLX90393
+#ifndef MLX90393_H
+#define MLX90393_H
 
+#include "cpufreq.h"
 #include "ChipSelect.h"
 #include <avr/io.h>
 #include <util/delay.h>

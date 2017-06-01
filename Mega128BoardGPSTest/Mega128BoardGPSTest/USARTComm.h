@@ -1,5 +1,5 @@
-#ifndef USARTCOMM
-#define USARTCOMM
+#ifndef USARTCOMM_H
+#define USARTCOMM_H
 
 #include "cpufreq.h"
 #include <avr/io.h>

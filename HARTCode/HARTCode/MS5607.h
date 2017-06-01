@@ -1,8 +1,9 @@
 /* MS5607.h is the include file for the altimeter. */
 
-#ifndef MS5607
-#define MS5607
+#ifndef MS5607_H
+#define MS5607_H
 
+#include "cpufreq.h"
 #include "ChipSelect.h"
 #include <avr/io.h>
 #include <util/delay.h>

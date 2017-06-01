@@ -64,11 +64,6 @@ ISR(USART0_RX_vect){
 		PORTB &= ~(1 << 1);
 		PORTB &= ~(1 << 2);
 		USARTTX('\n', GPSPORT);
-		for (interruptEchoIndex; interruptEchoIndex < 254; interruptEchoIndex++){
-			USARTTX(gpsBuffer[interruptEchoIndex], GPSPORT);
-		}
-		USARTTX('\n', GPSPORT);
-		interruptEchoIndex = 0;
 		#endif
 		cli();
 		return;
@@ -203,7 +198,7 @@ void getGPSData(struct GPSStruct *GPSdata){
 		PORTB &= ~(1 << 3);
 		latConvert = (int32_t)GPSdata->latitude;
 		longConvert = (int32_t)GPSdata->longitude;
-		echoLength = sprintf(echoLatLongAlt, " %ld.%ld %ld.%ld %u %u", latConvert, labs((int32_t)((GPSdata->latitude - latConvert)*100000)), longConvert, labs((int32_t)((GPSdata->longitude - longConvert)*100000)), GPSdata->GPSAltitude, commaCount);
+		echoLength = sprintf(echoLatLongAlt, "%ld.%ld %ld.%ld %u %u*", latConvert, labs((int32_t)((GPSdata->latitude - latConvert)*10000)), longConvert, labs((int32_t)((GPSdata->longitude - longConvert)*10000)), GPSdata->GPSAltitude, commaCount);
 		for (echoIndex; echoIndex < echoLength; echoIndex++){
 			USARTTX(echoLatLongAlt[echoIndex], GPSPORT);
 		}
@@ -228,15 +223,6 @@ void parseGGA(char *packet, struct GPSStruct *GPSdata) {
 	char *originalPacketCopy = packetCopy; 
 	// The string token that we are currently looking at
 	char *msgPart = packetCopy;
-	#ifdef UNITTEST
-	while (packetCopy[i] != '\0'){
-		USARTTX(packetCopy[i], GPSPORT);
-		i++;	
-	}
-	USARTTX(packetCopy[i], GPSPORT);
-	USARTTX('\n', GPSPORT);
-	i = 0;
-	#endif
 	
 	// Skip the xxGGA and time fields
 	for(i = 0; i < 2; i++) {
@@ -263,16 +249,6 @@ void parseGGA(char *packet, struct GPSStruct *GPSdata) {
 	// get the longitude
 	msgPart = strsep(&packetCopy, ",");
 	// Debug to see what it thinks the longitude is
-	#ifdef UNITTEST
-	i = 0;
-	while (msgPart[i] != '\0'){
-		USARTTX(packetCopy[i], GPSPORT);
-		i++;
-	}
-	USARTTX(msgPart[i], GPSPORT);
-	USARTTX('\n', GPSPORT);
-	i = 0;
-	#endif
 	
 	if (msgPart[i]){
 		GPSdata->longitude = parseDegreesMinutes(msgPart, 3);

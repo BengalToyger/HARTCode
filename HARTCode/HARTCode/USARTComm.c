@@ -7,10 +7,12 @@ uint16_t SetBR(uint32_t baud, uint8_t port){
 		return 0;
 	} else {
 		if (port){
-			UBRR1 = SetUBRR;
+			UBRR1H = SetUBRR >> 8;
+			UBRR1L = SetUBRR;
 			return SetUBRR;
 		} else {
-			UBRR0 = SetUBRR;
+			UBRR0H = SetUBRR >> 8;
+			UBRR0L = SetUBRR;
 			return SetUBRR;
 		}
 	}
@@ -21,10 +23,10 @@ uint16_t InitUSART(uint32_t baud, uint8_t port){
 	SetUBRR = SetBR(baud, port);
 	if (SetUBRR){
 		if (port){
-			UCSR1B = (1 << RXEN1)|(1 << TXEN1)|(1 << RXCIE1);
+			UCSR1B = (1 << RXEN1)|(1 << TXEN1);
 			return SetUBRR;
 		} else {
-			UCSR0B = (1 << RXEN0)|(1 << TXEN1);
+			UCSR0B = (1 << RXEN0)|(1 << TXEN0)|(1 << RXCIE0);
 			return SetUBRR;
 		}
 	} else {

@@ -1,10 +1,7 @@
-#ifndef KALMAN
-#define KALMAN
+#ifndef KALMAN_H
+#define KALMAN_H
 
-#ifndef F_CPU 
-#define F_CPU 8000000UL
-#endif
-
+#include "cpufreq.h"
 #include "MPU6000.h"
 #include <math.h>
 
