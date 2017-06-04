@@ -20,12 +20,15 @@ ISR(USART0_RX_vect){
 	#endif
 	//Resets if too high
 	if (msgIndex >= 254){
-		#ifdef DOUNITTEST
-		PORTB &= ~(1 << 2);
-		#endif
 		msgIndex = 0;
 		msgBeginFlag = 0;
 		msgEndFlag = 0;
+		#ifdef DOUNITTEST
+		PORTB &= ~(1 << 2);
+		PORTB ^= (1 << 7);
+		USARTTX('O', GPSPORT);
+		USARTTX('*', GPSPORT);
+		#endif
 	}
 	//Checks to see receive byte is start of packet
 	if (rcvb == '$' && !msgEndFlag){
@@ -198,7 +201,7 @@ void getGPSData(struct GPSStruct *GPSdata){
 		PORTB &= ~(1 << 3);
 		latConvert = (int32_t)GPSdata->latitude;
 		longConvert = (int32_t)GPSdata->longitude;
-		echoLength = sprintf(echoLatLongAlt, " %ld.%ld %ld.%ld %u %u", latConvert, labs((int32_t)((GPSdata->latitude - latConvert)*100000)), longConvert, labs((int32_t)((GPSdata->longitude - longConvert)*100000)), GPSdata->GPSAltitude, commaCount);
+		echoLength = sprintf(echoLatLongAlt, "%ld.%ld %ld.%ld %u %u*", latConvert, labs((int32_t)((GPSdata->latitude - latConvert)*10000)), longConvert, labs((int32_t)((GPSdata->longitude - longConvert)*10000)), GPSdata->GPSAltitude, commaCount);
 		for (echoIndex; echoIndex < echoLength; echoIndex++){
 			USARTTX(echoLatLongAlt[echoIndex], GPSPORT);
 		}
@@ -216,13 +219,26 @@ void getGPSData(struct GPSStruct *GPSdata){
 // Returns:
 //		Nothing
 void parseGGA(char *packet, struct GPSStruct *GPSdata) {
-	char *packetCopy = strdup(packet);
+	char packetIn[256];
+	char* packetCopy;
+	packetCopy = packetIn;
+	strncpy(packetIn, packet, 256);
 	uint8_t volatile i = 0;
-	// We are going to alter the packetCopy pointer with strsep, so keep
-	// a copy of the original location so we can free() it later.
-	char *originalPacketCopy = packetCopy; 
 	// The string token that we are currently looking at
 	char *msgPart = packetCopy;
+	
+	//#ifdef UNITTEST
+	//if (packetCopy == gpsBuffer){
+		//PORTB |= (1 << 7);
+	//}
+	//while (packetCopy[msgIndex] != '*'){
+		//USARTTX(packetCopy[msgIndex], GPSPORT);
+		//msgIndex++;
+	//}
+	//USARTTX('#', GPSPORT);
+	//USARTTX('\n', GPSPORT);
+	//msgIndex = 0;
+	//#endif
 	
 	// Skip the xxGGA and time fields
 	for(i = 0; i < 2; i++) {
@@ -231,36 +247,48 @@ void parseGGA(char *packet, struct GPSStruct *GPSdata) {
 	i = 0;
 	
 	// get the latitude
-	if (msgPart[i]){
-		msgPart = strsep(&packetCopy, ",");
+	msgPart = strsep(&packetCopy, ",");
+	if (*msgPart){
 		GPSdata->latitude = parseDegreesMinutes(msgPart, 2);
 	} else {
 		GPSdata->latitude = 0;
+		GPSdata->longitude = 0;
+		GPSdata->GPSAltitude = 0;
+		return;
 	}
 	
 	// get the N/S component of the latitude. If it's 'S', then make the latitude negative
-	if (msgPart[i]){
-		msgPart = strsep(&packetCopy, ",");
-		if(*msgPart == 'S') {
-			GPSdata->latitude = -GPSdata->latitude;
-		}
+	msgPart = strsep(&packetCopy, ",");
+	if(*msgPart == 'S') {
+		GPSdata->latitude = -GPSdata->latitude;
+	} else if (*msgPart != 'N'){
+		GPSdata->latitude = 0;
+		GPSdata->longitude = 0;
+		GPSdata->GPSAltitude = 0;
+		return;
 	}
 	
 	// get the longitude
 	msgPart = strsep(&packetCopy, ",");
 	// Debug to see what it thinks the longitude is
 	
-	if (msgPart[i]){
+	if (*msgPart){
 		GPSdata->longitude = parseDegreesMinutes(msgPart, 3);
 	} else {
+		GPSdata->latitude = 0;
 		GPSdata->longitude = 0;
+		GPSdata->GPSAltitude = 0;
+		return;
 	}
 	// get the E/W component of the longitude. If it's 'W', then make the longitude negative
 	msgPart = strsep(&packetCopy, ",");
-	if (msgPart[i]){
-		if(*msgPart == 'W') {
-			GPSdata->longitude = -GPSdata->longitude;
-		}
+	if(*msgPart == 'W') {
+		GPSdata->longitude = -GPSdata->longitude;
+	} else if (*msgPart != 'E'){
+		GPSdata->latitude = 0;
+		GPSdata->longitude = 0;
+		GPSdata->GPSAltitude = 0;
+		return;
 	}
 	
 	// Skip the quality, numSV, and HDOP fields
@@ -273,11 +301,11 @@ void parseGGA(char *packet, struct GPSStruct *GPSdata) {
 	if(*msgPart != '\0') {
 		GPSdata->GPSAltitude = atof(msgPart);
 	} else {
+		GPSdata->latitude = 0;
+		GPSdata->longitude = 0;
 		GPSdata->GPSAltitude = 0;
+		return;
 	}
-	
-	free(originalPacketCopy);
-		
 }
 
 // Parses a string in the format: DDMM.MMMMMMM, where DD is degrees, and MM is minutes.

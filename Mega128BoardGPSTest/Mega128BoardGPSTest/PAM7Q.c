@@ -20,12 +20,15 @@ ISR(USART0_RX_vect){
 	#endif
 	//Resets if too high
 	if (msgIndex >= 254){
-		#ifdef DOUNITTEST
-		PORTB &= ~(1 << 2);
-		#endif
 		msgIndex = 0;
 		msgBeginFlag = 0;
 		msgEndFlag = 0;
+		#ifdef DOUNITTEST
+		PORTB &= ~(1 << 2);
+		PORTB ^= (1 << 7);
+		USARTTX('O', GPSPORT);
+		USARTTX('*', GPSPORT);
+		#endif
 	}
 	//Checks to see receive byte is start of packet
 	if (rcvb == '$' && !msgEndFlag){
