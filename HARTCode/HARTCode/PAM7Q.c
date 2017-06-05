@@ -13,19 +13,13 @@ uint8_t volatile interruptEchoIndex = 0;
 ISR(USART0_RX_vect){
 	uint8_t rcvb;
 	rcvb = UDR0;
-	#ifdef DOUNITTEST
-	PORTB &= ~(1 << 3);
-	PORTB ^= (1 << 0);
-	//USARTTX(rcvb, GPSPORT);
-	#endif
+
 	//Resets if too high
 	if (msgIndex >= 254){
 		msgIndex = 0;
 		msgBeginFlag = 0;
 		msgEndFlag = 0;
 		#ifdef DOUNITTEST
-		PORTB &= ~(1 << 2);
-		PORTB ^= (1 << 7);
 		USARTTX('O', GPSPORT);
 		USARTTX('*', GPSPORT);
 		#endif
@@ -34,9 +28,6 @@ ISR(USART0_RX_vect){
 	if (rcvb == '$' && !msgEndFlag){
 		//If it is sets begin flag, puts in buffer
 		#ifdef DOUNITTEST 
-		PORTB |= (1 << 1);
-		PORTB &= ~(1 << 3);
-		PORTB &= ~(1 << 2);
 		commaCount = 0;
 		#endif
 		msgBeginFlag = 1;
@@ -46,8 +37,6 @@ ISR(USART0_RX_vect){
 	} else if (msgBeginFlag && rcvb != '*' && !msgEndFlag && rcvb != '$'){
 		//If the message has started, put all received stuff in buffer
 		#ifdef DOUNITTEST 
-		PORTB |= (1 << 2);
-		PORTB &= ~(1 << 1);
 		if (rcvb == ','){
 			commaCount++;
 		}
@@ -63,13 +52,9 @@ ISR(USART0_RX_vect){
 		msgEndFlag = 1;
 		msgBeginFlag = 0;
 		#ifdef DOUNITTEST
-		PORTB |= (1 << 3);
-		PORTB &= ~(1 << 1);
-		PORTB &= ~(1 << 2);
 		USARTTX('\n', GPSPORT);
 		#endif
-		cli();
-		return;
+		UCSR0B &= ~(1 << RXCIE0);
 	}
 }
 
@@ -198,7 +183,6 @@ void getGPSData(struct GPSStruct *GPSdata){
 		parseGGA(gpsBuffer, GPSdata);
 		msgEndFlag = 0;
 		#ifdef DOUNITTEST
-		PORTB &= ~(1 << 3);
 		latConvert = (int32_t)GPSdata->latitude;
 		longConvert = (int32_t)GPSdata->longitude;
 		echoLength = sprintf(echoLatLongAlt, "%ld.%ld %ld.%ld %u %u*", latConvert, labs((int32_t)((GPSdata->latitude - latConvert)*10000)), longConvert, labs((int32_t)((GPSdata->longitude - longConvert)*10000)), GPSdata->GPSAltitude, commaCount);
@@ -207,7 +191,7 @@ void getGPSData(struct GPSStruct *GPSdata){
 		}
 		USARTTX('\n', GPSPORT);
 		#endif
-		sei();
+		UCSR0B |= (1 << RXCIE0);
 	}
 	return;
 }

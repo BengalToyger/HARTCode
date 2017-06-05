@@ -1,4 +1,5 @@
-MPU6000.d MPU6000.o: .././MPU6000.c .././MPU6000.h .././ChipSelect.h \
+MPU6000.d MPU6000.o: .././MPU6000.c .././MPU6000.h .././cpufreq.h \
+ .././ChipSelect.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\avr\io.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\avr\sfr_defs.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\inttypes.h \
@@ -19,6 +20,8 @@ MPU6000.d MPU6000.o: .././MPU6000.c .././MPU6000.h .././ChipSelect.h \
  .././SPIComm.h
 
 .././MPU6000.h:
+
+.././cpufreq.h:
 
 .././ChipSelect.h:
 

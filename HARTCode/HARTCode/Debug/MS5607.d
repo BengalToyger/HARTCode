@@ -1,4 +1,5 @@
-MS5607.d MS5607.o: .././MS5607.c .././MS5607.h .././ChipSelect.h \
+MS5607.d MS5607.o: .././MS5607.c .././MS5607.h .././cpufreq.h \
+ .././ChipSelect.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\avr\io.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\avr\sfr_defs.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\inttypes.h \
@@ -19,6 +20,8 @@ MS5607.d MS5607.o: .././MS5607.c .././MS5607.h .././ChipSelect.h \
  .././SPIComm.h
 
 .././MS5607.h:
+
+.././cpufreq.h:
 
 .././ChipSelect.h:
 

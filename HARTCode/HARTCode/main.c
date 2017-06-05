@@ -5,17 +5,14 @@
  * Author : Scott Merrill
  */
 
-#define F_CPU 16000000UL
+// Remove this to disable unit tests.
+//#define DOUNITTEST
+#include "Rocket.h"
 #include "unittest.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
-
 int main(void)
 {
-	#ifdef DOUNITTEST
-	beginUnitTest();
-	#endif
-
-	while(1){};
+	dataOnlyMain();
 }

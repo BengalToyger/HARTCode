@@ -66,9 +66,6 @@
 #define M2S 11
 #define M2R 12
 
-// Remove this to disable unit tests.
-#define DOUNITTEST
-
 /* USES TIMER/COUNTER 4*/
 
 struct DataStruct {
@@ -97,6 +94,8 @@ void formPayloadMode4(struct DataStruct* data, uint8_t* payload);
 void receiveArmed(struct DataStruct* data);
 
 void rocketInit(struct DataStruct* data);
+
+void dataOnlyMain(void);
 
 void launchPad(struct DataStruct* data);
 

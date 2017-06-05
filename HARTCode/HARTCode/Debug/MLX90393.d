@@ -1,4 +1,5 @@
-MLX90393.d MLX90393.o: .././MLX90393.c .././MLX90393.h .././ChipSelect.h \
+MLX90393.d MLX90393.o: .././MLX90393.c .././MLX90393.h .././cpufreq.h \
+ .././ChipSelect.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\avr\io.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\avr\sfr_defs.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\inttypes.h \
@@ -19,6 +20,8 @@ MLX90393.d MLX90393.o: .././MLX90393.c .././MLX90393.h .././ChipSelect.h \
  .././SPIComm.h
 
 .././MLX90393.h:
+
+.././cpufreq.h:
 
 .././ChipSelect.h:
 

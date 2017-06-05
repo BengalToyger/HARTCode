@@ -15,7 +15,7 @@ float Readdt(void){
 	float cnt;
 	cnt = TCNT1;
 	Resetdt();
-	return cnt/(F_CPU*KALMANPRSCL);
+	return cnt/((float)F_CPU*(float)KALMANPRSCL);
 }
 
 void Estimate(struct KalmanStruct* estimate, struct AccelStruct* accelData, float altitude){

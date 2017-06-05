@@ -1,5 +1,6 @@
 #include "Rocket.h"
 
+/*
 uint8_t volatile rxn;
 uint8_t volatile rx[256];
 uint8_t volatile rxFlag;
@@ -16,6 +17,7 @@ ISR(USART1_RX_vect){
 	} 
 	rxFlag=1; // notify main of receipt of data.
 }
+*/
 
 void collectData(struct DataStruct* data){
 	uint16_t volatile temp;
@@ -121,9 +123,10 @@ void rocketInit(struct DataStruct* data){
 	}
 	data->EstData.kAltitude = data->groundLevel;
 	Initdt();
-	rxFlag = 0;
-	data->mode = 1;
+	//rxFlag = 0;
+	data->mode = 2;
 	data->state = 0;
+	initSendCnt();
 	sei();
 	return;
 }
@@ -147,6 +150,7 @@ void dataOnlyMain(void){
 	}
 }
 
+/*
 void receiveArmed(struct DataStruct* data){
 	if (rxFlag){
 		if (rx[rxn-2] == 1 || rx[rxn-2] == 2){
@@ -157,6 +161,7 @@ void receiveArmed(struct DataStruct* data){
 	sei();
 	return;
 }
+*/
 
 void launchPad(struct DataStruct* data){
 	uint8_t payload[PAYLOAD2SIZE];
