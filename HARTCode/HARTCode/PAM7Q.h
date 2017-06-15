@@ -1,6 +1,7 @@
 #ifndef PAM7Q
 #define PAM7Q
 
+#include "unittest.h"
 #include "cpufreq.h"
 #include "USARTComm.h"
 #include <util/delay.h>
@@ -12,6 +13,7 @@
 /* RESET I IN GPS FUNCTIONS AND USART */
 
 //Talker ID: GP
+#define RADIOPORT 1
 #define GPSPORT 0
 #define PUBX00POLL "PUBX,00*33" //WORKS!
 #define PUBX00SIZE 10

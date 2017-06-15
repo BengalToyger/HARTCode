@@ -1,6 +1,11 @@
 #ifndef ROCKET_H
 #define ROCKET_H
 
+#define SUSTAINER
+
+#define BOOSTTRIGGER 80
+#define STAGINGTRIGGER -20
+
 #include "cpufreq.h"
 #include "RocketTiming.h"
 #include "MPU6000.h"
@@ -28,9 +33,6 @@
 #define ARMED 2
 #define LOWPOWER 4
 
-#define BOOSTTRIGGER 40
-#define STAGINGTRIGGER -15
-
 #define DROGUETIMESECSUSTAINER 11
 #define DROGUETIMESECBOOSTER 21
 
@@ -46,9 +48,8 @@
 #define LAUNCHPAD 0
 #define BOOST 1
 #define STAGING 2
-#define SUSTAIN 3
-#define PARACHUTE 4
-#define GROUND 5
+#define PARACHUTE 3
+#define GROUND 4
 
 /* Events */
 
@@ -74,15 +75,16 @@ struct DataStruct {
 	struct KalmanStruct EstData;
 	float altitude;
 	float groundLevel;
-	uint8_t GPS;
+	float refAlt;
+	float newAlt;
+	uint8_t halfSecCnt;
 	uint8_t state;
 	uint8_t degreesC;
 	uint8_t mode;
 	uint8_t matchSetReset;
 	uint8_t ematch;
-	uint8_t sensors;
+	uint32_t eepromAddress;
 	uint16_t CC[7];
-	char packet[RSIZE+1];
 };
 
 void collectData(struct DataStruct* data);
@@ -91,33 +93,12 @@ void formPayloadMode1(struct DataStruct* data, uint8_t* payload);
 void formPayloadMode2(struct DataStruct* data, uint8_t* payload);
 void formPayloadMode4(struct DataStruct* data, uint8_t* payload);
 
-void receiveArmed(struct DataStruct* data);
-
 void rocketInit(struct DataStruct* data);
 
 void dataOnlyMain(void);
 
-void launchPad(struct DataStruct* data);
-
-void boost(struct DataStruct* data);
-
-void stagingBooster(struct DataStruct* data);
-
-void stagingSustainer(struct DataStruct* data);
-
-void sustainer(struct DataStruct* data);
-
-void parachute(struct DataStruct* data);
-
-void ground(struct DataStruct* data);
-
-float angleFromVertical(struct DataStruct* data);
-
-void testMain(void);
+void stateMain(void);
 
 void rocketMain(struct DataStruct* data);
-
-void sustainerMain(void);
-void boosterMain(void);
 
 #endif

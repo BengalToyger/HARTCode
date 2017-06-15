@@ -29,12 +29,12 @@ NACK to finish and send stop.
 
 DOESN'T KEEP TRACK OF PAGE OVERFLOW*/
 
-void AddressSetup(uint8_t wr, uint8_t* AddBytes, uint32_t Address, uint8_t chip);
-void WriteStream(uint8_t* packet, uint8_t* addbytes, uint8_t psize, uint8_t addsize);
-void MemWrite(uint32_t Address, uint8_t* Packet, uint8_t size, uint8_t chip);
-void ReadStream(uint8_t* packet, uint8_t* addbytes, uint8_t psize, uint8_t addsize);
-void MemRead(uint32_t Address, uint8_t* Readbyte, uint8_t size, uint8_t chip);
-void SavePacket(uint32_t* Address, uint8_t* packet, uint8_t size);
-void ReadEEPROM(void);
+void addressSetup(uint8_t wr, uint8_t* AddBytes, uint32_t Address, uint8_t chip);
+void writeStream(uint8_t* packet, uint8_t* addbytes, uint8_t psize, uint8_t addsize);
+void memWrite(uint32_t Address, uint8_t* Packet, uint8_t size, uint8_t chip);
+void readStream(uint8_t* packet, uint8_t* addbytes, uint8_t psize, uint8_t addsize);
+void memRead(uint32_t Address, uint8_t* packet, uint8_t size, uint8_t chip);
+void savePacket(uint32_t* address, uint8_t* packet, uint8_t size);
+void readPacket(uint32_t* address, uint8_t* packet, uint8_t size);
 
 #endif

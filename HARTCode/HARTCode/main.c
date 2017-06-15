@@ -14,5 +14,5 @@
 
 int main(void)
 {
-	dataOnlyMain();
+	stateMain();
 }

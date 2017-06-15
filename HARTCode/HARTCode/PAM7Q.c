@@ -1,5 +1,4 @@
 #include "PAM7Q.h"
-#include "unittest.h"
 
 char volatile gpsBuffer[256];
 uint8_t volatile msgIndex = 0;
@@ -19,10 +18,6 @@ ISR(USART0_RX_vect){
 		msgIndex = 0;
 		msgBeginFlag = 0;
 		msgEndFlag = 0;
-		#ifdef DOUNITTEST
-		USARTTX('O', GPSPORT);
-		USARTTX('*', GPSPORT);
-		#endif
 	}
 	//Checks to see receive byte is start of packet
 	if (rcvb == '$' && !msgEndFlag){
@@ -34,7 +29,7 @@ ISR(USART0_RX_vect){
 		msgIndex = 0;
 		gpsBuffer[msgIndex] = rcvb;
 		msgIndex++;
-	} else if (msgBeginFlag && rcvb != '*' && !msgEndFlag && rcvb != '$'){
+	} else if (msgBeginFlag && rcvb != '*' && !msgEndFlag){
 		//If the message has started, put all received stuff in buffer
 		#ifdef DOUNITTEST 
 		if (rcvb == ','){
@@ -52,7 +47,7 @@ ISR(USART0_RX_vect){
 		msgEndFlag = 1;
 		msgBeginFlag = 0;
 		#ifdef DOUNITTEST
-		USARTTX('\n', GPSPORT);
+		USARTTX('\n', RADIOPORT);
 		#endif
 		UCSR0B &= ~(1 << RXCIE0);
 	}
@@ -183,13 +178,16 @@ void getGPSData(struct GPSStruct *GPSdata){
 		parseGGA(gpsBuffer, GPSdata);
 		msgEndFlag = 0;
 		#ifdef DOUNITTEST
+		USARTTX('\n', RADIOPORT);
+		USARTTX('\n', RADIOPORT);
 		latConvert = (int32_t)GPSdata->latitude;
 		longConvert = (int32_t)GPSdata->longitude;
 		echoLength = sprintf(echoLatLongAlt, "%ld.%ld %ld.%ld %u %u*", latConvert, labs((int32_t)((GPSdata->latitude - latConvert)*10000)), longConvert, labs((int32_t)((GPSdata->longitude - longConvert)*10000)), GPSdata->GPSAltitude, commaCount);
 		for (echoIndex; echoIndex < echoLength; echoIndex++){
-			USARTTX(echoLatLongAlt[echoIndex], GPSPORT);
+			USARTTX(echoLatLongAlt[echoIndex], RADIOPORT);
 		}
-		USARTTX('\n', GPSPORT);
+		USARTTX('\n', RADIOPORT);
+		USARTTX('\n', RADIOPORT);
 		#endif
 		UCSR0B |= (1 << RXCIE0);
 	}
@@ -205,9 +203,9 @@ void getGPSData(struct GPSStruct *GPSdata){
 void parseGGA(char *packet, struct GPSStruct *GPSdata) {
 	char packetIn[256];
 	char* packetCopy;
+	uint8_t volatile i = 0;
 	packetCopy = packetIn;
 	strncpy(packetIn, packet, 256);
-	uint8_t volatile i = 0;
 	// The string token that we are currently looking at
 	char *msgPart = packetCopy;
 	
